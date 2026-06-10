@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Bell, Download, LayoutGrid, RefreshCw } from 'lucide-react';
-import OverviewView  from './components/views/OverviewView';
-import FreeTextView  from './components/views/FreeTextView';
+import OverviewView    from './components/views/OverviewView';
+import FreeTextView    from './components/views/FreeTextView';
 import SuggestionsView from './components/views/SuggestionsView';
+import BuyerView       from './components/views/BuyerView';
 
 const TABS = [
-  { id: 'overview',         label: 'Overview'             },
-  { id: 'matched',          label: 'Matched Catalog'    },
-  { id: 'nonmatched',       label: 'Non Matched Catalog'},
+  { id: 'overview',   label: 'Overview'           },
+  { id: 'matched',    label: 'Matched Catalog'    },
+  { id: 'nonmatched', label: 'Non Matched Catalog'},
+  { id: 'buyer',      label: 'Buyer Requisition'  },
 ];
 
 export default function App() {
@@ -24,13 +26,12 @@ export default function App() {
             </span>
           </div>
 
-          {/* Tabs */}
           <nav className="fc-nav">
             {TABS.map(t => (
               <button
                 key={t.id}
                 onClick={() => setActive(t.id)}
-                className={`fc-nav__item${active === t.id ? ' fc-nav__item--active' : ''}`}
+                className={`fc-nav__item${active === t.id ? ' fc-nav__item--active' : ''} fc-nav__item--${t.id}`}
               >
                 {t.label}
               </button>
@@ -56,6 +57,7 @@ export default function App() {
           {active === 'overview'   && <OverviewView />}
           {active === 'matched'    && <FreeTextView />}
           {active === 'nonmatched' && <SuggestionsView />}
+          {active === 'buyer'      && <BuyerView />}
         </main>
       </div>
     </div>

@@ -1,0 +1,188 @@
+/* ── BuyerView Layout ──────────────────────────────────────── */
+.buyer-view {
+  display: flex; flex-direction: column; gap: 1.5rem;
+  max-width: 860px; margin: 0 auto;
+  animation: fadeInUp 0.4s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.buyer-view__header {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.buyer-view__header-left { display: flex; align-items: center; gap: 14px; }
+.buyer-view__header-icon {
+  width: 48px; height: 48px; border-radius: 14px;
+  background: rgba(204,162,62,0.12); border: 1px solid rgba(204,162,62,0.25);
+  color: var(--ofi-gold,#CCA23E);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.buyer-view__title    { font-size: 1.35rem; font-weight: 800; color: var(--ofi-text-primary,#FFF); margin: 0 0 2px; letter-spacing: -0.3px; }
+.buyer-view__subtitle { font-size: 13px; color: var(--ofi-text-secondary,#A0A0A0); margin: 0; }
+
+.buyer-view__badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(204,162,62,0.1); border: 1px solid rgba(204,162,62,0.3);
+  color: var(--ofi-gold,#CCA23E); border-radius: 20px;
+  padding: 6px 14px; font-size: 12px; font-weight: 700;
+}
+
+/* ── Composer ──────────────────────────────────────────────── */
+.buyer-composer {
+  background: var(--ofi-surface,#0A0A0A);
+  border: 1px solid rgba(204,162,62,0.35);
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 0 24px rgba(204,162,62,0.06);
+  transition: box-shadow 0.3s;
+  position: relative;
+}
+.buyer-composer:focus-within {
+  border-color: rgba(204,162,62,0.6);
+  box-shadow: 0 0 30px rgba(204,162,62,0.12);
+}
+.buyer-composer__label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--ofi-gold,#CCA23E); margin-bottom: 0.9rem;
+}
+.buyer-composer__textarea-wrap { position: relative; }
+.buyer-composer__textarea {
+  width: 100%; min-height: 140px; resize: vertical;
+  background: var(--ofi-bg,#000); border: 1px solid var(--ofi-border,#1F1F1F);
+  border-radius: 12px; padding: 14px 16px;
+  color: var(--ofi-text-primary,#FFF); font-size: 14px; line-height: 1.7;
+  font-family: var(--font-sans); transition: border-color 0.2s, box-shadow 0.2s;
+}
+.buyer-composer__textarea:focus {
+  border-color: var(--ofi-gold,#CCA23E);
+  box-shadow: 0 0 0 3px rgba(204,162,62,0.08);
+}
+
+/* ── Quick suggestions ─────────────────────────────────────── */
+.buyer-suggest {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 50;
+  background: var(--ofi-surface,#0A0A0A);
+  border: 1px solid rgba(204,162,62,0.3); border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  animation: fadeInUp 0.15s ease both;
+}
+.buyer-suggest__label {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--ofi-gold,#CCA23E);
+  border-bottom: 1px solid var(--ofi-border,#1F1F1F);
+}
+.buyer-suggest__item {
+  display: block; width: 100%; text-align: left;
+  padding: 10px 14px; background: transparent; border: none;
+  color: var(--ofi-text-secondary,#A0A0A0); font-size: 13px;
+  cursor: pointer; transition: all 0.15s; font-family: var(--font-sans);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.buyer-suggest__item:last-child { border-bottom: none; }
+.buyer-suggest__item:hover { background: rgba(204,162,62,0.06); color: var(--ofi-gold,#CCA23E); padding-left: 20px; }
+
+/* ── Composer footer ───────────────────────────────────────── */
+.buyer-composer__footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 1rem; flex-wrap: wrap; gap: 10px;
+}
+.buyer-composer__charcount {
+  font-size: 11px; color: var(--ofi-text-muted,#555); font-weight: 600;
+  transition: color 0.2s;
+}
+.buyer-composer__charcount--warn { color: #F59E0B; }
+.buyer-composer__actions { display: flex; align-items: center; gap: 8px; }
+
+.buyer-composer__submit {
+  min-width: 160px; display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: all 0.2s;
+}
+.buyer-composer__submit--loading { opacity: 0.7; cursor: not-allowed; }
+
+/* spinner */
+.buyer-spinner {
+  width: 14px; height: 14px; border: 2px solid rgba(0,0,0,0.3);
+  border-top-color: #000; border-radius: 50%;
+  animation: spin 0.6s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* success toast */
+.buyer-toast {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 12px; padding: 12px 16px;
+  background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25);
+  border-radius: 10px; color: #22C55E; font-size: 13px; font-weight: 600;
+  animation: fadeInUp 0.25s ease both;
+}
+
+/* ── History ───────────────────────────────────────────────── */
+.buyer-history {
+  background: var(--ofi-surface,#0A0A0A);
+  border: 1px solid var(--ofi-border,#1F1F1F);
+  border-radius: 18px; overflow: hidden;
+}
+.buyer-history__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--ofi-border,#1F1F1F);
+  flex-wrap: wrap; gap: 10px;
+}
+.buyer-history__title {
+  font-size: 1rem; font-weight: 700; color: var(--ofi-text-primary,#FFF); margin: 0;
+}
+
+/* filter pills */
+.buyer-filter { display: flex; gap: 6px; flex-wrap: wrap; }
+.buyer-filter__btn {
+  padding: 5px 14px; border-radius: 20px; border: 1px solid var(--ofi-border,#1F1F1F);
+  background: transparent; color: var(--ofi-text-secondary,#A0A0A0);
+  font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  font-family: var(--font-sans);
+}
+.buyer-filter__btn:hover { border-color: var(--ofi-gold,#CCA23E); color: var(--ofi-gold,#CCA23E); background: rgba(204,162,62,0.05); }
+.buyer-filter__btn--active { background: var(--ofi-gold,#CCA23E); color: #000; border-color: var(--ofi-gold,#CCA23E); }
+
+/* empty state */
+.buyer-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 3rem; color: var(--ofi-text-muted,#555); font-size: 13px; font-weight: 500;
+}
+
+/* req cards */
+.buyer-history__list { display: flex; flex-direction: column; }
+.buyer-req-card {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.15s;
+}
+.buyer-req-card:last-child { border-bottom: none; }
+.buyer-req-card:hover { background: rgba(204,162,62,0.03); }
+.buyer-req-card__left { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
+
+.buyer-req-card__status {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+  align-self: flex-start;
+}
+.buyer-req-card__status--pending  { background: rgba(245,158,11,0.12); color: #F59E0B; border: 1px solid rgba(245,158,11,0.25); }
+.buyer-req-card__status--approved { background: rgba(34,197,94,0.12);  color: #22C55E; border: 1px solid rgba(34,197,94,0.25);  }
+.buyer-req-card__status--rejected { background: rgba(239,68,68,0.12);  color: #EF4444; border: 1px solid rgba(239,68,68,0.25);  }
+
+.buyer-req-card__text {
+  font-size: 13.5px; color: var(--ofi-text-primary,#FFF); line-height: 1.5;
+  word-break: break-word; margin: 0;
+}
+.buyer-req-card__meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.buyer-req-card__date { font-size: 11px; color: var(--ofi-text-muted,#555); font-weight: 600; }
+
+.buyer-req-card__delete {
+  width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+  border: 1px solid var(--ofi-border,#1F1F1F); background: transparent;
+  color: var(--ofi-text-muted,#555); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; margin-top: 2px;
+}
+.buyer-req-card__delete:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: #EF4444; }
