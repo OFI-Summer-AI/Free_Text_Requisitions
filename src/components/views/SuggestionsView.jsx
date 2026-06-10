@@ -1,190 +1,295 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { AlertTriangle, TrendingUp, FileText, CheckCircle2, ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, AlertTriangle, TrendingUp, FileText, Lightbulb, GitBranch } from 'lucide-react';
 import { C } from '../../lib/colors';
 
-const suggestions = [
-  { id:1, supplier:'VWR International',        category:'Lab Consumables',          orders:47, spend:387000, saving:8.5,  priority:'High',   status:'Actionable', trend:[28,31,35,40,47] },
-  { id:2, supplier:'Air Liquide Belgium',       category:'Industrial Gases',         orders:36, spend:241200, saving:12.0, priority:'High',   status:'Actionable', trend:[18,22,25,30,36] },
-  { id:3, supplier:'Thermo Fisher Scientific',  category:'Lab Equipment & Reagents', orders:29, spend:514000, saving:6.5,  priority:'Medium', status:'In Review',  trend:[15,18,21,24,29] },
-  { id:4, supplier:'Merck Millipore',           category:'Chemicals',                orders:24, spend:298400, saving:9.0,  priority:'Medium', status:'Actionable', trend:[12,14,17,20,24] },
-  { id:5, supplier:'RS Components',             category:'Electronics & Cables',     orders:19, spend:73500,  saving:5.0,  priority:'Low',    status:'Watchlist',  trend:[8,10,12,15,19]  },
-  { id:6, supplier:'Pfeiffer Vacuum GmbH',      category:'Vacuum Equipment',         orders:15, spend:372000, saving:7.5,  priority:'Medium', status:'Actionable', trend:[5,7,9,12,15]    },
+const items = [
+  {
+    id: 1,
+    desc: 'Industrial Vacuum Pump — Model V4',
+    vendor: 'Pfeiffer Vacuum GmbH',
+    orders: 47, spend: 1165600, avgOrder: 24800,
+    rec: 'contract_vendor',
+    insight: 'You have placed 47 orders with this vendor for this item in the last 12 months. Logging a contract with Pfeiffer Vacuum GmbH is expected to unlock volume discounts.',
+    saving: 8.5,
+    priority: 'High',
+  },
+  {
+    id: 2,
+    desc: 'Lab Grade Isopropanol 5L × 20',
+    vendor: 'VWR International',
+    orders: 36, spend: 115200, avgOrder: 3200,
+    rec: 'similar_material',
+    similarMat: 'CH-100010-6-2p — Isopropanol 2.5L',
+    insight: 'A similar catalogue material is already under contract. Consolidating under the existing VWR agreement removes the free-text overhead entirely.',
+    saving: 12.0,
+    priority: 'High',
+  },
+  {
+    id: 3,
+    desc: 'Nitrogen Gas Cylinder 50L (99.999%)',
+    vendor: 'Air Liquide Belgium',
+    orders: 29, spend: 194300, avgOrder: 6700,
+    rec: 'contract_vendor',
+    insight: 'Recurring gas supply with a single vendor. A framework agreement with Air Liquide Belgium would guarantee pricing and reduce your procurement cycle time.',
+    saving: 6.5,
+    priority: 'High',
+  },
+  {
+    id: 4,
+    desc: 'Deionised Water System DI-2000',
+    vendor: 'Merck Millipore',
+    orders: 24, spend: 441600, avgOrder: 18400,
+    rec: 'similar_material',
+    similarMat: 'CH-400046-0-De — DI Water System DI-1500',
+    insight: 'A near-identical model is already contracted. Extending that contract to cover this variant eliminates duplicate supplier negotiations.',
+    saving: 9.0,
+    priority: 'Medium',
+  },
+  {
+    id: 5,
+    desc: 'Cleanroom Gloves Class 10 XL (×1000)',
+    vendor: 'Micronclean Ltd',
+    orders: 19, spend: 23560, avgOrder: 1240,
+    rec: 'contract_vendor',
+    insight: 'Consumable with a predictable demand profile. A blanket order would reduce individual PO overhead significantly.',
+    saving: 5.0,
+    priority: 'Medium',
+  },
+  {
+    id: 6,
+    desc: 'Reflow Oven Controller Board REF-4',
+    vendor: 'Heller Industries',
+    orders: 15, spend: 618000, avgOrder: 41200,
+    rec: 'contract_vendor',
+    insight: 'High-value item with consistent demand. Contract negotiation is projected to deliver a significant unit price reduction.',
+    saving: 7.5,
+    priority: 'Medium',
+  },
+  {
+    id: 7,
+    desc: 'High-Temperature Resistant Cable 10m',
+    vendor: 'RS Components',
+    orders: 12, spend: 46200, avgOrder: 3850,
+    rec: 'similar_material',
+    similarMat: 'CH-400412-0-HT — HT Cable 5m',
+    insight: 'A contracted shorter variant exists. Extending the current agreement to cover this length avoids duplicate supplier negotiations.',
+    saving: 4.5,
+    priority: 'Low',
+  },
+  {
+    id: 8,
+    desc: 'EKG Monitoring Module EK-32',
+    vendor: 'Siemens Healthineers',
+    orders: 10, spend: 89000, avgOrder: 8900,
+    rec: 'contract_vendor',
+    insight: 'Single-source specialist equipment. Formalising a preferred supplier agreement ensures supply continuity and pricing stability.',
+    saving: 6.0,
+    priority: 'Low',
+  },
 ];
 
-const spendData = suggestions.map(s => ({
-  name: s.supplier.split(' ')[0],
-  spend: s.spend,
-  saving: Math.round(s.spend * s.saving / 100),
-}));
+const totalSpend    = items.reduce((a, i) => a + i.spend, 0);
+const totalSavings  = items.reduce((a, i) => a + Math.round(i.spend * i.saving / 100), 0);
+const highPriority  = items.filter(i => i.priority === 'High');
 
-const PRIORITY_BADGE = {
-  High:   <span style={{ background:C.gold, color:'#000', fontSize:10, fontWeight:700, padding:'3px 10px', borderRadius:20 }}>HIGH</span>,
-  Medium: <span className="badge-neutral" style={{ textTransform:'uppercase', fontSize:10 }}>MEDIUM</span>,
-  Low:    <span className="badge-neutral" style={{ textTransform:'uppercase', fontSize:10, opacity:0.6 }}>LOW</span>,
+const PRIORITY_STYLE = {
+  High:   { background: C.gold,    color: '#000',     fontSize: 10, fontWeight: 700, padding: '3px 10px', borderRadius: 20 },
+  Medium: { background: '#2a2a2a', color: C.textSec,  fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 20, border: `1px solid ${C.border}` },
+  Low:    { background: 'transparent', color: C.muted, fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 20, border: `1px solid ${C.border}` },
 };
-const STATUS_COLOR = { Actionable:'color:'+ C.gold, 'In Review':'color:'+ C.textSec, Watchlist:'color:'+ C.textSec };
 
-function MiniSparkline({ data }) {
-  const max = Math.max(...data);
-  const pts = data.map((v,i) => `${4+(i/(data.length-1))*52},${18-(v/max)*14}`).join(' ');
-  return (
-    <svg width="60" height="20">
-      <polyline points={pts} fill="none" stroke={C.gold} strokeWidth="1.5" />
-      {[data.length-1].map(i => {
-        const x = 4+(i/(data.length-1))*52, y = 18-(data[i]/max)*14;
-        return <circle key={i} cx={x} cy={y} r="2.5" fill={C.gold} />;
-      })}
-    </svg>
-  );
-}
-
-export default function SuggestionsView() {
-  const totalSavings = suggestions.reduce((a,s)=>a+Math.round(s.spend*s.saving/100),0);
-  const actionable   = suggestions.filter(s=>s.status==='Actionable').length;
+function CallingCard({ item }) {
+  const savingEUR = Math.round(item.spend * item.saving / 100);
+  const isVendor  = item.rec === 'contract_vendor';
 
   return (
-    <div>
-      {/* KPIs */}
-      <div className="kpi-efficiency-grid" style={{ marginBottom:20 }}>
+    <div style={{
+      background: C.surface,
+      border: `1px solid ${C.border}`,
+      borderLeft: `3px solid ${C.gold}`,
+      borderRadius: 12,
+      padding: '18px 20px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 14,
+    }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 13, color: C.textPri, lineHeight: 1.3 }}>{item.desc}</div>
+          <div style={{ fontSize: 11, color: C.textSec, marginTop: 3 }}>{item.vendor}</div>
+        </div>
+        <span style={PRIORITY_STYLE[item.priority]}>{item.priority.toUpperCase()}</span>
+      </div>
+
+      {/* Stats row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
         {[
-          { label:'Contract Suggestions',    value:suggestions.length, icon:FileText,     gold:false },
-          { label:'Actionable Now',           value:actionable,         icon:AlertTriangle,gold:true  },
-          { label:'Potential Annual Savings', value:`€${(totalSavings/1000).toFixed(0)}K`,icon:TrendingUp,   gold:true  },
-          { label:'Contracts Created YTD',   value:3,                  icon:CheckCircle2, gold:false },
-        ].map(({ label, value, icon:Icon, gold }) => (
-          <div key={label} className="kpi-card">
-            <div className="kpi-card__header">
-              <div className="kpi-card__icon" style={{ background: gold?'rgba(204,162,62,0.15)':'rgba(255,255,255,0.05)' }}>
-                <Icon size={18} color={gold?C.gold:C.textSec} />
-              </div>
-            </div>
-            <div className="kpi-card__value" style={{ color:gold?C.gold:C.textPri }}>{value}</div>
-            <div className="kpi-card__label">{label}</div>
+          { l: 'Orders (12M)',  v: item.orders,                              c: C.textPri },
+          { l: 'Total Spend',   v: `€${(item.spend / 1000).toFixed(0)}K`,   c: C.textPri },
+          { l: 'Avg Order',     v: `€${item.avgOrder.toLocaleString()}`,     c: C.textSec },
+        ].map(({ l, v, c }) => (
+          <div key={l} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: 8, padding: '8px 10px' }}>
+            <div style={{ fontSize: 9, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>{l}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: c }}>{v}</div>
           </div>
         ))}
       </div>
 
-      {/* Alert banner */}
-      <div style={{ background:'rgba(204,162,62,0.08)', border:`1px solid rgba(204,162,62,0.3)`, borderRadius:12, padding:'12px 16px', display:'flex', alignItems:'center', gap:12, marginBottom:16, fontSize:13 }}>
-        <AlertTriangle size={16} color={C.gold} style={{ flexShrink:0 }} />
-        <p style={{ color:C.textPri }}>
-          <strong style={{ color:C.gold }}>{actionable} suppliers</strong> have exceeded the repetitive-order threshold.
-          Consolidating these under contract could save approximately{' '}
-          <strong style={{ color:C.gold }}>€{(totalSavings/1000).toFixed(0)}K</strong> annually.
-        </p>
-      </div>
-
-      <div className="dashboard-charts-row" style={{ gridTemplateColumns:'1fr 320px' }}>
-        {/* Suggestion cards grid */}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
-          {suggestions.map(s => (
-            <div key={s.id} className="suboptimal-tile fade-in-up">
-              <div className="suboptimal-tile__header">
-                <div>
-                  <div style={{ fontWeight:700, fontSize:13, color:C.textPri }}>{s.supplier}</div>
-                  <div style={{ fontSize:11, color:C.textSec, marginTop:2 }}>{s.category}</div>
-                </div>
-                {PRIORITY_BADGE[s.priority]}
-              </div>
-
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:8, marginBottom:12 }}>
-                {[
-                  { l:'Orders (12M)', v:s.orders, c:C.textPri },
-                  { l:'Total Spend',  v:`€${(s.spend/1000).toFixed(0)}K`, c:C.textPri },
-                  { l:'Potential',    v:`${s.saving}%`, c:C.gold },
-                ].map(({ l,v,c }) => (
-                  <div key={l}>
-                    <div style={{ fontSize:9, color:C.muted, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:2 }}>{l}</div>
-                    <div style={{ fontSize:16, fontWeight:800, color:c }}>{v}</div>
-                  </div>
-                ))}
-              </div>
-
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
-                <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                  <span style={{ fontSize:9, color:C.muted }}>TREND</span>
-                  <MiniSparkline data={s.trend} />
-                </div>
-                <span style={{ fontSize:11, color: s.status==='Actionable'?C.gold:C.textSec, fontWeight: s.status==='Actionable'?700:400 }}>
-                  {s.status}
-                </span>
-              </div>
-
-              {s.status === 'Actionable' && (
-                <button className="btn btn-primary btn-full" style={{ borderRadius:8 }}>Create Contract →</button>
-              )}
-              {s.status === 'In Review' && (
-                <button className="btn btn-outline btn-full" style={{ borderRadius:8 }}>View Review</button>
-              )}
-              {s.status === 'Watchlist' && (
-                <button className="btn btn-ghost btn-full" style={{ borderRadius:8 }}>Monitor</button>
-              )}
-            </div>
-          ))}
+      {/* Recommendation */}
+      <div style={{
+        background: 'rgba(204,162,62,0.06)',
+        border: `1px solid rgba(204,162,62,0.2)`,
+        borderRadius: 8,
+        padding: '12px 14px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+          {isVendor
+            ? <AlertTriangle size={13} color={C.gold} style={{ flexShrink: 0, marginTop: 1 }} />
+            : <GitBranch     size={13} color={C.gold} style={{ flexShrink: 0, marginTop: 1 }} />
+          }
+          <p style={{ fontSize: 12, color: C.textSec, lineHeight: 1.55, margin: 0 }}>
+            {item.insight}
+            {!isVendor && (
+              <span style={{ display: 'block', marginTop: 4, color: C.textSec }}>
+                Similar contracted material: <span style={{ color: C.gold, fontWeight: 600 }}>{item.similarMat}</span>
+              </span>
+            )}
+          </p>
         </div>
 
-        {/* Spend vs savings chart */}
-        <div className="chart-section" style={{ display:'flex', flexDirection:'column' }}>
-          <div className="chart-section__header">
-            <div>
-              <h3 className="chart-section__title">Spend vs Savings</h3>
-              <p className="chart-section__subtitle">By supplier (top 6)</p>
-            </div>
-          </div>
-          <div className="chart-section__body" style={{ flex:1 }}>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={spendData} layout="vertical" margin={{ top:4, right:16, left:4, bottom:4 }}>
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={C.grid} />
-                <XAxis type="number" tick={{ fontSize:9, fill:C.textSec }} tickFormatter={v=>`€${(v/1000).toFixed(0)}K`} />
-                <YAxis type="category" dataKey="name" width={56} tick={{ fontSize:10, fill:C.textPri }} />
-                <Tooltip contentStyle={C.tip} formatter={(v,n)=>[`€${(v/1000).toFixed(0)}K`, n==='spend'?'Total Spend':'Potential Saving']} />
-                <Bar dataKey="spend"  fill={C.border} name="spend"  radius={[0,2,2,0]} maxBarSize={14} />
-                <Bar dataKey="saving" fill={C.gold}   name="saving" radius={[0,2,2,0]} maxBarSize={14} />
-              </BarChart>
-            </ResponsiveContainer>
-            <div style={{ display:'flex', justifyContent:'center', gap:20, fontSize:10, color:C.textSec }}>
-              <span style={{ display:'flex', alignItems:'center', gap:6 }}><span style={{ width:12,height:12,borderRadius:3,background:C.border,display:'inline-block' }} /> Total Spend</span>
-              <span style={{ display:'flex', alignItems:'center', gap:6 }}><span style={{ width:12,height:12,borderRadius:3,background:C.gold,display:'inline-block' }} /> Savings</span>
-            </div>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingTop: 4, borderTop: `1px solid rgba(204,162,62,0.15)` }}>
+          <TrendingUp size={12} color={C.gold} />
+          <span style={{ fontSize: 11, color: C.textPri }}>
+            Expected benefit: <strong style={{ color: C.gold }}>{item.saving}% reduction</strong>
+            {' '}·{' '}
+            <strong style={{ color: C.gold }}>€{(savingEUR / 1000).toFixed(0)}K</strong> annually
+          </span>
         </div>
       </div>
 
-      {/* Detail table */}
-      <div className="chart-section" style={{ marginTop:12 }}>
+      <button className="btn btn-primary btn-full" style={{ borderRadius: 8, fontSize: 12 }}>
+        {isVendor ? 'Create Contract with Vendor →' : 'Consolidate under Existing Contract →'}
+      </button>
+    </div>
+  );
+}
+
+export default function SuggestionsView() {
+  return (
+    <div>
+
+      {/* ════════════════════════════════════════════════════
+          KPIs
+          ════════════════════════════════════════════════════ */}
+      <div className="kpi-efficiency-grid" style={{ marginBottom: 20, gridTemplateColumns: 'repeat(4, 1fr)' }}>
+        {[
+          { label: 'Non-Catalog Items',      value: items.length,                              gold: false  },
+          { label: 'High Priority',          value: highPriority.length,                       gold: true   },
+          { label: 'Total Spend (12M)',       value: `€${(totalSpend / 1000000).toFixed(1)}M`,  danger: false, gold: false },
+          { label: 'Potential Annual Savings',value: `€${(totalSavings / 1000).toFixed(0)}K`,  gold: true   },
+        ].map(({ label, value, gold, danger }) => (
+          <div key={label} className="kpi-card">
+            <div className="kpi-card__value" style={{ color: danger ? C.red : gold ? C.gold : C.textPri }}>
+              {value}
+            </div>
+            <div className="kpi-card__label">{label}</div>
+            <div className="kpi-card__progress" style={{ marginTop: 10 }}>
+              <div className="kpi-card__progress-fill" style={{
+                width: gold ? '65%' : '80%',
+                background: `linear-gradient(90deg,${C.gold},#E2C96A)`,
+              }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ════════════════════════════════════════════════════
+          CALLING CARDS — High priority items
+          ════════════════════════════════════════════════════ */}
+      <div style={{ marginBottom: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <Lightbulb size={14} color={C.gold} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: C.textSec, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            High-Potential Items — Action Required
+          </span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
+          {highPriority.map(item => <CallingCard key={item.id} item={item} />)}
+        </div>
+      </div>
+
+      {/* ════════════════════════════════════════════════════
+          TABLE — All non-catalog items
+          ════════════════════════════════════════════════════ */}
+      <div className="chart-section">
         <div className="chart-section__header">
-          <h3 className="chart-section__title">Repetitive Order Detail</h3>
+          <div className="chart-section__title-group">
+            <div className="chart-section__icon"><FileText size={18} /></div>
+            <div>
+              <h3 className="chart-section__title">All Non-Catalog Items</h3>
+              <p className="chart-section__subtitle">Order frequency, spend, and system recommendations</p>
+            </div>
+          </div>
         </div>
-        <table className="dark-table">
-          <thead>
-            <tr>
-              {['Supplier','Category','Orders (12M)','Total Spend','Saving','Avg Order','Priority','Status','Action'].map(h=>(
-                <th key={h}><span style={{ display:'flex', alignItems:'center', gap:4 }}>{h} <ArrowUpDown size={9} color={C.border} /></span></th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {suggestions.map(s=>(
-              <tr key={s.id}>
-                <td style={{ fontWeight:700, color:C.textPri }}>{s.supplier}</td>
-                <td style={{ color:C.textSec, fontSize:11 }}>{s.category}</td>
-                <td style={{ textAlign:'right', fontWeight:700 }}>{s.orders}</td>
-                <td style={{ textAlign:'right', color:C.textSec }}>€{(s.spend/1000).toFixed(0)}K</td>
-                <td style={{ textAlign:'right', fontWeight:700, color:C.gold }}>{s.saving}%</td>
-                <td style={{ textAlign:'right', color:C.textSec }}>€{Math.round(s.spend/s.orders).toLocaleString()}</td>
-                <td>{PRIORITY_BADGE[s.priority]}</td>
-                <td style={{ color:s.status==='Actionable'?C.gold:C.textSec, fontWeight:s.status==='Actionable'?700:400 }}>{s.status}</td>
-                <td>
-                  {s.status==='Actionable'
-                    ? <button className="btn btn-primary btn-sm">Create Contract</button>
-                    : <button className="btn btn-outline btn-sm">View</button>
-                  }
-                </td>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="dark-table">
+            <thead>
+              <tr>
+                {['Item Description', 'Vendor', 'Orders (12M)', 'Total Spend', 'Avg Order', 'Recommendation', 'Est. Saving', 'Priority', 'Action'].map(h => (
+                  <th key={h}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {h} <ArrowUpDown size={9} color={C.border} />
+                    </span>
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {items.map(item => {
+                const savingEUR = Math.round(item.spend * item.saving / 100);
+                return (
+                  <tr key={item.id}>
+                    <td style={{ fontWeight: 600, color: C.textPri, maxWidth: 220 }}>
+                      <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.desc}
+                      </span>
+                    </td>
+                    <td style={{ color: C.textSec, fontSize: 11 }}>{item.vendor}</td>
+                    <td style={{ textAlign: 'right', fontWeight: 700 }}>{item.orders}</td>
+                    <td style={{ textAlign: 'right', color: C.textSec }}>€{(item.spend / 1000).toFixed(0)}K</td>
+                    <td style={{ textAlign: 'right', color: C.textSec }}>€{item.avgOrder.toLocaleString()}</td>
+                    <td>
+                      <span style={{
+                        fontSize: 10, padding: '3px 8px', borderRadius: 6, fontWeight: 600,
+                        background: item.rec === 'contract_vendor' ? 'rgba(204,162,62,0.1)' : 'rgba(100,160,255,0.1)',
+                        color: item.rec === 'contract_vendor' ? C.gold : '#7eb8f7',
+                        border: `1px solid ${item.rec === 'contract_vendor' ? 'rgba(204,162,62,0.3)' : 'rgba(100,160,255,0.3)'}`,
+                      }}>
+                        {item.rec === 'contract_vendor' ? 'New Contract' : 'Consolidate'}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <span style={{ color: C.gold, fontWeight: 700 }}>{item.saving}%</span>
+                      <span style={{ color: C.textSec, fontSize: 10, display: 'block' }}>€{(savingEUR / 1000).toFixed(0)}K/yr</span>
+                    </td>
+                    <td><span style={PRIORITY_STYLE[item.priority]}>{item.priority.toUpperCase()}</span></td>
+                    <td>
+                      {item.priority === 'High'
+                        ? <button className="btn btn-primary btn-sm">Create Contract</button>
+                        : <button className="btn btn-outline btn-sm">Review</button>
+                      }
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
+
     </div>
   );
 }
