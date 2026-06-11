@@ -1,4 +1,5 @@
-import { ArrowUpDown, AlertTriangle, TrendingUp, FileText, Lightbulb, GitBranch } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowUpDown, AlertTriangle, TrendingUp, FileText, Lightbulb, GitBranch, CheckCircle } from 'lucide-react';
 import { C } from '../../lib/colors';
 
 const MOCK_items = [
@@ -18,7 +19,7 @@ const PRIORITY_STYLE = {
   Low:    { background: 'transparent', color: C.muted,    fontSize: 10, fontWeight: 600, padding: '3px 10px', borderRadius: 20, border: `1px solid ${C.border}` },
 };
 
-function CallingCard({ item }) {
+function CallingCard({ item, onAction }) {
   const savingEUR = Math.round(item.spend * item.saving / 100);
   const avgOrder  = item.avgOrder ?? (item.orders ? Math.round(item.spend / item.orders) : 0);
   const isVendor  = item.rec === 'contract_vendor';
@@ -78,7 +79,11 @@ function CallingCard({ item }) {
         </div>
       </div>
 
-      <button className="btn btn-primary btn-full" style={{ borderRadius: 8, fontSize: 12 }}>
+      <button
+        className="btn btn-primary btn-full"
+        style={{ borderRadius: 8, fontSize: 12 }}
+        onClick={() => onAction(item.id)}
+      >
         {isVendor ? 'Create Contract with Vendor →' : 'Consolidate under Existing Contract →'}
       </button>
     </div>
@@ -87,10 +92,14 @@ function CallingCard({ item }) {
 
 export default function SuggestionsView({ data }) {
   const items = Array.isArray(data) ? [...MOCK_items, ...data] : MOCK_items;
+  const [actionedIds, setActionedIds] = useState([]);
+
+  const handleAction = (id) => setActionedIds(prev => prev.includes(id) ? prev : [...prev, id]);
 
   const totalSpend   = items.reduce((a, i) => a + i.spend, 0);
   const totalSavings = items.reduce((a, i) => a + Math.round(i.spend * i.saving / 100), 0);
-  const highPriority = items.filter(i => i.priority === 'High');
+  const highPriority = items.filter(i => i.priority === 'High' && !actionedIds.includes(i.id));
+  const createdContracts = items.filter(i => actionedIds.includes(i.id));
 
   return (
     <div>
@@ -129,7 +138,7 @@ export default function SuggestionsView({ data }) {
           </span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 20 }}>
-          {highPriority.map(item => <CallingCard key={item.id} item={item} />)}
+          {highPriority.map(item => <CallingCard key={item.id} item={item} onAction={handleAction} />)}
         </div>
       </div>
 
@@ -190,9 +199,13 @@ export default function SuggestionsView({ data }) {
                     </td>
                     <td><span style={PRIORITY_STYLE[item.priority]}>{(item.priority ?? '').toUpperCase()}</span></td>
                     <td>
-                      {item.priority === 'High'
-                        ? <button className="btn btn-primary btn-sm">Create Contract</button>
-                        : <button className="btn btn-outline btn-sm">Review</button>
+                      {actionedIds.includes(item.id)
+                        ? <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#4ade80', fontSize: 11, fontWeight: 600 }}>
+                            <CheckCircle size={13} /> Created
+                          </span>
+                        : item.priority === 'High'
+                          ? <button className="btn btn-primary btn-sm" onClick={() => handleAction(item.id)}>Create Contract</button>
+                          : <button className="btn btn-outline btn-sm">Review</button>
                       }
                     </td>
                   </tr>
@@ -202,6 +215,79 @@ export default function SuggestionsView({ data }) {
           </table>
         </div>
       </div>
+
+      {/* ════════════════════════════════════════════════════
+          CREATED CONTRACTS TABLE
+          ════════════════════════════════════════════════════ */}
+      {createdContracts.length > 0 && (
+        <div className="chart-section" style={{ marginTop: 20 }}>
+          <div className="chart-section__header">
+            <div className="chart-section__title-group">
+              <div className="chart-section__icon" style={{ background: 'rgba(74,222,128,0.1)', color: '#4ade80' }}>
+                <CheckCircle size={18} />
+              </div>
+              <div>
+                <h3 className="chart-section__title">Created Contracts</h3>
+                <p className="chart-section__subtitle">Contracts actioned from suggestions — pending procurement review</p>
+              </div>
+            </div>
+            <span style={{
+              fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 20,
+              background: 'rgba(74,222,128,0.12)', color: '#4ade80',
+              border: '1px solid rgba(74,222,128,0.3)',
+            }}>
+              {createdContracts.length} contract{createdContracts.length > 1 ? 's' : ''} created
+            </span>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="dark-table">
+              <thead>
+                <tr>
+                  {['Item Description', 'Vendor', 'Orders (12M)', 'Total Spend', 'Type', 'Est. Saving', 'Status'].map(h => (
+                    <th key={h}><span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{h}</span></th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {createdContracts.map(item => {
+                  const savingEUR = Math.round(item.spend * item.saving / 100);
+                  return (
+                    <tr key={item.id}>
+                      <td style={{ fontWeight: 600, color: C.textPri, maxWidth: 220 }}>
+                        <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.desc}
+                        </span>
+                      </td>
+                      <td style={{ color: C.textSec, fontSize: 11 }}>{item.vendor}</td>
+                      <td style={{ textAlign: 'right', fontWeight: 700 }}>{item.orders}</td>
+                      <td style={{ textAlign: 'right', color: C.textSec }}>€{(item.spend / 1000).toFixed(0)}K</td>
+                      <td>
+                        <span style={{
+                          fontSize: 10, padding: '3px 8px', borderRadius: 6, fontWeight: 600,
+                          background: item.rec === 'contract_vendor' ? 'rgba(204,162,62,0.1)' : 'rgba(100,160,255,0.1)',
+                          color: item.rec === 'contract_vendor' ? C.gold : '#7eb8f7',
+                          border: `1px solid ${item.rec === 'contract_vendor' ? 'rgba(204,162,62,0.3)' : 'rgba(100,160,255,0.3)'}`,
+                        }}>
+                          {item.rec === 'contract_vendor' ? 'New Contract' : 'Consolidate'}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <span style={{ color: C.gold, fontWeight: 700 }}>{item.saving}%</span>
+                        <span style={{ color: C.textSec, fontSize: 10, display: 'block' }}>€{(savingEUR / 1000).toFixed(0)}K/yr</span>
+                      </td>
+                      <td>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 5, color: '#4ade80', fontSize: 11, fontWeight: 600 }}>
+                          <CheckCircle size={13} /> Contract Created
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
     </div>
   );
