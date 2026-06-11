@@ -4,11 +4,13 @@ import { submitBuyerRequisition } from '../../lib/api';
 import { C } from '../../lib/colors';
 
 const PLANTS = [
-  'ADM – IMEC Administratie',
+  'AR - IMEC LEUVEN',
+  'VMO - VAN MOER',
   'FI01 – IMEC FINLAND',
-  'Z001 – IMEC VZW',
-  'IM – IMEC 1',
-  'Other',
+  'PXR - NIPPON GASSES',
+  'HOT - IMEC FINLAND',
+  'ADI',
+  'VZW',
 ];
 
 const FIELD_LABEL = {
@@ -145,7 +147,7 @@ export default function BuyerRequisitionView() {
             className="form-input"
             style={{ fontSize: 13, cursor: 'pointer' }}
           >
-            <option value="">Select a plant…</option>
+            <option value="">Select a plant...</option>
             {PLANTS.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
