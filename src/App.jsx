@@ -4,11 +4,13 @@ import { fetchDashboard } from './lib/api';
 import OverviewView  from './components/views/OverviewView';
 import FreeTextView  from './components/views/FreeTextView';
 import SuggestionsView from './components/views/SuggestionsView';
+import BuyerRequisitionView from './components/views/BuyerRequisitionView';
 
 const TABS = [
-  { id: 'overview',         label: 'Overview'             },
-  { id: 'matched',          label: 'Matched Catalog'    },
-  { id: 'nonmatched',       label: 'Contract Suggestion' },
+  { id: 'overview',     label: 'Overview'             },
+  { id: 'matched',      label: 'Matched Catalog'      },
+  { id: 'nonmatched',   label: 'Contract Suggestion'  },
+  { id: 'requisition',  label: 'Buyer Requisition'    },
 ];
 
 export default function App() {
@@ -62,8 +64,9 @@ export default function App() {
       <div className="fc-page__body">
         <main className="fc-page__main">
           {active === 'overview'   && <OverviewView   data={DATA?.overview} />}
-          {active === 'matched'    && <FreeTextView   data={DATA?.matched} />}
-          {active === 'nonmatched' && <SuggestionsView data={DATA?.nonmatched} />}
+          {active === 'matched'      && <FreeTextView         data={DATA?.matched} />}
+          {active === 'nonmatched'   && <SuggestionsView      data={DATA?.nonmatched} />}
+          {active === 'requisition'  && <BuyerRequisitionView />}
         </main>
       </div>
     </div>
